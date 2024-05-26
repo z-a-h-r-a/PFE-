@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
         "SignIn": (context) => const SignIn(),
         "Add": (context) => const Add(),
         "MyHomePage": (context) => const MyHomePage(
-              title: '',
+              title: 'hhhh',
             ),
         "MapScreen": (context) => MapSample(),
       },
