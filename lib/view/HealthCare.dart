@@ -1,6 +1,7 @@
 // ignore_for_file: file_names, library_private_types_in_public_api
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/service/notif_service.dart';
 import 'package:todo/view/side_menu.dart';
 
 class HealthCare extends StatefulWidget {
@@ -10,36 +11,52 @@ class HealthCare extends StatefulWidget {
   State createState() => _HealthCareState();
 }
 
-class _HealthCareState extends State<HealthCare>
-    with SingleTickerProviderStateMixin {
+class _HealthCareState extends State<HealthCare> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  double heartRateBPM = 0; // Initialize with a default value
+  double heartRateBPM = 0; 
   double temperature = 0;
+  final Notif notif = Notif();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Set up real-time listener for heart rate
     FirebaseFirestore.instance
         .collection('heart_rates')
         .doc('BPM')
-        .get()
-        .then((snapshot) {
+        .snapshots()
+        .listen((snapshot) {
       if (snapshot.exists) {
         setState(() {
           heartRateBPM = snapshot.data()?['BPM'] ?? 0; // Update the BPM value
         });
+        checkForAlerts(); // Check if notification should be sent
       }
     });
 
-    // Fetch Temperature
-    FirebaseFirestore.instance.collection('temperature').get().then((snapshot) {
+    // Set up real-time listener for temperature
+    FirebaseFirestore.instance
+        .collection('temperature')
+        .snapshots()
+        .listen((snapshot) {
       if (snapshot.docs.isNotEmpty) {
         setState(() {
-          temperature = snapshot.docs.first.data()['temperature'] ??
-              0; // Update the temperature value
+          temperature = snapshot.docs.first.data()['temperature'] ?? 0; // Update the temperature value
         });
+        checkForAlerts(); // Check if notification should be sent
       }
     });
+  }
+
+  void checkForAlerts() {
+    if (temperature < 36 || temperature > 39 || heartRateBPM < 80 || heartRateBPM > 100) {
+      notif.showNotification(
+        'Health Alert',
+        'Temperature or heart rate is out of range!',
+      );
+    }
   }
 
   @override
@@ -111,6 +128,7 @@ class _HealthCareState extends State<HealthCare>
                   const SizedBox(
                     height: 100,
                   ),
+                  IconButton(onPressed:(){ notif.showNotification("Test Title","Test body");}, icon: Icon(Icons.notification_add))
 
                   // Wrap(
                   //   children: <Widget>[

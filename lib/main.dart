@@ -4,33 +4,49 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 //
 import 'package:todo/view/Add.dart';
 import 'package:todo/view/HealthCare.dart';
 import 'package:todo/view/Login.dart';
-// import 'package:todo/view/MapScreen.dart';
 import 'package:todo/view/MyHomePage.dart';
-// import 'package:todo/view/Notif.dart';
 import 'package:todo/view/PageeView.dart';
 import 'package:todo/view/SignIn.dart';
 import 'package:todo/view/location.dart';
-// import 'package:todo/view/HealthCare.dart';
-// import 'package:todo/view/side_menu.dart';
-// import 'firebase_options.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Platform.isAndroid
-      ? await Firebase.initializeApp(
-          options: const FirebaseOptions(
-            apiKey: "AIzaSyBQI5JOfvxjT6PN-cIR4e9HzJIbLhm2JNM",
-            appId: "1:95192147737:android:fcdf3c93673c8c6a050788",
-            messagingSenderId: "95192147737",
-            projectId: "todo-70f6e",
-            storageBucket: "todo-70f6e.appspot.com",
-          ),
-        )
-      : await Firebase.initializeApp();
+
+  if (Platform.isAndroid) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyBQI5JOfvxjT6PN-cIR4e9HzJIbLhm2JNM",
+        appId: "1:95192147737:android:fcdf3c93673c8c6a050788",
+        messagingSenderId: "95192147737",
+        projectId: "todo-70f6e",
+        storageBucket: "todo-70f6e.appspot.com",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  // Request notification permissions for Android 13 and above
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+
   runApp(const MyApp());
 }
 
@@ -70,7 +86,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Pageeview(),
+      home: const MyHomePage(title:"hhhh"),
       routes: {
         "Pageeview": (context) => const Pageeview(),
         "HealthCare": (context) => const HealthCare(),
